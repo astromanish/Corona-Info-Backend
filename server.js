@@ -1,24 +1,30 @@
-if (process.env.NODE_ENV !== 'production') {
-    require('dotenv/config')
+if (process.env.NODE_ENV !== "production") {
+    require("dotenv/config");
 }
 
-const express = require('express');
-const cors = require('cors');
-const bodyParser = require('body-parser');
+const express = require("express");
+const mongoose = require("mongoose");
+const bodyParser = require("body-parser");
+const cors = require("cors");
+const indexRoute = require("./routes/index");
+const questionRoute = require("./routes/question");
+const answerRoute = require("./routes/answer");
 
-const HomeRoute = require('./routes/home');
-// const ExperienceRoute = require('./routes/experience');
-// const SympathyRoute = require('./routes/sympathy');
+const app = express();
 
-const App = express();
+app.use(bodyParser.json());
+// to send allow-access-origin as * to all response so no cors error from any origin
+app.use(cors());
+app.use("/", indexRoute);
+app.use("/questions", questionRoute);
+app.use("/answers", answerRoute);
 
-App.use(cors());
-App.use(bodyParser.json());
-App.use("/", HomeRoute)
-// App.use("/experience", ExperienceRoute);
-// App.use("/sympathy", SympathyRoute);
-
-const PORT = process.env.PORT;
-App.listen(PORT, () => {
-    console.log(`Server runnig at PORT: ${PORT}`)
+mongoose.connect(process.env.DB_URL, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
 });
+const db = mongoose.connection;
+db.once("open", () => console.log("Database Connection: OK"));
+db.on("error", (err) => console.error(err));
+
+app.listen(process.env.PORT);
